@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "snajper"
+version = "0.1.0"
+description = "Prototype changed code test runner"
+authors = ["Michal Bultrowicz <michal.bultrowicz@gmail.com>"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+coverage = "^5"
+watchdog = "^0.9.0"
+
+[tool.poetry.dev-dependencies]
+ptpython = "^2.0.6"
+pytest = "^5.3.4"
+toml = "^0.10.0"
+
+# TODO add parallel coverage and branch
+litecli = "^1.2.0"
+[tool.coverage.run]
+dynamic_context = "test_function"
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
