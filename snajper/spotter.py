@@ -52,11 +52,24 @@ class SelectiveTestRunner(watchdog.events.FileSystemEventHandler):
     def on_modified(self, event):
         what = 'directory' if event.is_directory else 'file'
         if event.src_path.endswith('.py'):
-            logging.info("Modified %s: %s", what, event.src_path)
+            logging.info(">>> Modified %s: %s", what, event.src_path)
             run_tests_for_file(event.src_path)
 
 
 def run_tests_for_file(file: str):
+    # TODO why can't we have this before logging in on_modified?
+    subprocess.run('clear')
+
+    tests_for_the_file = _get_tests_to_run(file)
+
+    pytest_command = subprocess.check_output('which pytest'.split()).decode().strip()
+    subprocess.run(
+        [pytest_command,  '-v'] + tests_for_the_file,
+        env={'PYTHONPATH': 'tests/sample_project'},
+    )
+
+
+def _get_tests_to_run(file: str):
     con = sqlite3.connect('.coverage')
     sql = """
 select f.path, c.context
@@ -71,10 +84,7 @@ where c.context <> '';
     file_abs_path = str(Path(file).absolute())
     # col 0: path, col 1: test as dotted function notation
     tests_for_the_file = [row[1] for row in data if row[0] == file_abs_path]
-
-    print('Should run:')
-    for test in tests_for_the_file:
-        print(_get_test_for_pytest(test, data))
+    return [_get_test_for_pytest(test, data) for test in tests_for_the_file]
 
 
 def _get_test_for_pytest(test: str, files: List[str]):
